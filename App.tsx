@@ -822,6 +822,18 @@ function App() {
             },
             body: JSON.stringify({ authOnly: true }) // 只用于验证密码，不更新数据
         });
+
+        if (!authResponse.ok) {
+          console.error('Auth failed:', {
+            status: authResponse.status,
+            statusText: authResponse.statusText,
+            headers: Object.fromEntries(authResponse.headers.entries()),
+            url: authResponse.url
+          });
+          try {
+            const errBody = await authResponse.json();
+            console.error('Auth error body:', errBody);
+          } catch {}
         
         if (authResponse.ok) {
             setAuthToken(password);

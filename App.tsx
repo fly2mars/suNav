@@ -126,7 +126,6 @@ function App() {
   const [requiresAuth, setRequiresAuth] = useState<boolean | null>(null); // null表示未检查，true表示需要认证，false表示不需要
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false); // 退出后显示登录提示
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false); // 退出后显示登录提示
 
   // Sort State
   const [isSortingMode, setIsSortingMode] = useState<string | null>(null); // 存储正在排序的分类ID，null表示不在排序模式

@@ -125,7 +125,9 @@ function App() {
   const [authToken, setAuthToken] = useState<string>('');
   const [requiresAuth, setRequiresAuth] = useState<boolean | null>(null); // null表示未检查，true表示需要认证，false表示不需要
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false); // 退出后显示登录提示
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false); // 退出后显示登录提示
+
   // Sort State
   const [isSortingMode, setIsSortingMode] = useState<string | null>(null); // 存储正在排序的分类ID，null表示不在排序模式
   const [isSortingPinned, setIsSortingPinned] = useState(false); // 是否正在排序置顶链接
@@ -826,6 +828,7 @@ function App() {
             setAuthToken(password);
             localStorage.setItem(AUTH_KEY, password);
             setIsAuthOpen(false);
+            setShowLoginPrompt(false);
             setSyncStatus('saved');
             
             // 登录成功后，获取网站配置（包括密码过期时间设置）
@@ -925,6 +928,7 @@ function App() {
       setAuthToken(null);
       localStorage.removeItem(AUTH_KEY);
       setSyncStatus('offline');
+      setShowLoginPrompt(true);
       // 退出后重新加载本地数据
       loadFromLocal();
   };
@@ -2028,6 +2032,22 @@ function App() {
       {(!requiresAuth || authToken) && (
         <>
           <AuthModal isOpen={isAuthOpen} onLogin={handleLogin} />
+
+          {/* 退出后显示的登录提示 */}
+          {requiresAuth && showLoginPrompt && !authToken && (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                <Lock size={32} className="text-slate-400 dark:text-slate-500" />
+              </div>
+              <p className="text-lg font-medium text-slate-600 dark:text-slate-300 mb-4">请先登录</p>
+              <button
+                onClick={() => setIsAuthOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg transition-colors"
+              >
+                登录
+              </button>
+            </div>
+          )}
       
       <CategoryAuthModal 
         isOpen={!!catAuthModalData}

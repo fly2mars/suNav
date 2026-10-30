@@ -153,26 +153,26 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
 
   try {
     const body = await request.json();
-    
+
     // 如果只是验证密码，不更新数据
     if (body.authOnly) {
       if (!serverPassword) {
-        return new Response(JSON.stringify({ error: 'Server misconfigured: PASSWORD not set' }), { 
+        return new Response(JSON.stringify({ error: 'Server misconfigured: PASSWORD not set' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json', ...corsHeaders },
         });
       }
-      
+
       if (providedPassword !== serverPassword) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), {
           status: 401,
           headers: { 'Content-Type': 'application/json', ...corsHeaders },
         });
       }
-      
+
       // 更新最后认证时间
       await env.CLOUDNAV_KV.put('last_auth_time', Date.now().toString());
-      
+
       return new Response(JSON.stringify({ success: true }), {
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
@@ -189,7 +189,7 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
           });
         }
       }
-      
+
       await env.CLOUDNAV_KV.put('search_config', JSON.stringify(body.config));
       return new Response(JSON.stringify({ success: true }), {
         headers: { 'Content-Type': 'application/json', ...corsHeaders },

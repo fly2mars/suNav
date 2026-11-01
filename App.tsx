@@ -834,105 +834,105 @@ function App() {
             const errBody = await authResponse.json();
             console.error('Auth error body:', errBody);
           } catch {}
-        
-        if (authResponse.ok) {
-            setAuthToken(password);
-            localStorage.setItem(AUTH_KEY, password);
-            setIsAuthOpen(false);
-            setShowLoginPrompt(false);
-            setSyncStatus('saved');
-            
-            // 登录成功后，获取网站配置（包括密码过期时间设置）
-            try {
-                const websiteConfigRes = await fetch('/api/storage?getConfig=website');
-                if (websiteConfigRes.ok) {
-                    const websiteConfigData = await websiteConfigRes.json();
-                    if (websiteConfigData) {
-                        setSiteSettings(prev => ({
-                            ...prev,
-                            title: websiteConfigData.title || prev.title,
-                            navTitle: websiteConfigData.navTitle || prev.navTitle,
-                            favicon: websiteConfigData.favicon || prev.favicon,
-                            cardStyle: websiteConfigData.cardStyle || prev.cardStyle,
-                            passwordExpiryDays: websiteConfigData.passwordExpiryDays !== undefined ? websiteConfigData.passwordExpiryDays : prev.passwordExpiryDays
-                        }));
-                    }
-                }
-            } catch (e) {
-                console.warn("Failed to fetch website config after login.", e);
-            }
-            
-            // 检查密码是否过期
-            const lastLoginTime = localStorage.getItem('lastLoginTime');
-            const currentTime = Date.now();
-            
-            if (lastLoginTime) {
-                const lastLogin = parseInt(lastLoginTime);
-                const timeDiff = currentTime - lastLogin;
-                
-                const expiryTimeMs = (siteSettings.passwordExpiryDays || 7) > 0 ? (siteSettings.passwordExpiryDays || 7) * 24 * 60 * 60 * 1000 : 0;
-                
-                if (expiryTimeMs > 0 && timeDiff > expiryTimeMs) {
-                    setAuthToken(null);
-                    localStorage.removeItem(AUTH_KEY);
-                    setIsAuthOpen(true);
-                    alert('您的密码已过期，请重新登录');
-                    return false;
-                }
-            }
-            
-            localStorage.setItem('lastLoginTime', currentTime.toString());
-            
-            // 登录成功后，从服务器获取数据
-            try {
-                const res = await fetch('/api/storage');
-                if (res.ok) {
-                    const data = await res.json();
-                    // 如果服务器有数据，使用服务器数据
-                    if (data.links && data.links.length > 0) {
-                        setLinks(data.links);
-                        setCategories(data.categories || DEFAULT_CATEGORIES);
-                        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
-                        
-                        // 加载链接图标缓存
-                        loadLinkIcons(data.links);
-                    } else {
-                        // 如果服务器没有数据，使用本地数据
-                        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ links, categories }));
-                        // 并将本地数据同步到服务器
-                        syncToCloud(links, categories, password);
-                        
-                        // 加载链接图标缓存
-                        loadLinkIcons(links);
-                    }
-                } 
-            } catch (e) {
-                console.warn("Failed to fetch data after login.", e);
-                loadFromLocal();
-                // 尝试将本地数据同步到服务器
-                syncToCloud(links, categories, password);
-            }
-            
-            // 登录成功后，从KV空间加载AI配置
-            try {
-                const aiConfigRes = await fetch('/api/storage?getConfig=ai');
-                if (aiConfigRes.ok) {
-                    const aiConfigData = await aiConfigRes.json();
-                    if (aiConfigData && Object.keys(aiConfigData).length > 0) {
-                        setAiConfig(aiConfigData);
-                        localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(aiConfigData));
-                    }
-                }
-            } catch (e) {
-                console.warn("Failed to fetch AI config after login.", e);
-            }
-            
-            return true;
-        }
-        return false;
-      } catch (e) {
           return false;
-      }
+        }
+
+        // 认证通过，设置登录状态
+        setAuthToken(password);
+        localStorage.setItem(AUTH_KEY, password);
+        setIsAuthOpen(false);
+        setShowLoginPrompt(false);
+        setSyncStatus('saved');
+
+        // 登录成功后，获取网站配置（包括密码过期时间设置）
+        try {
+            const websiteConfigRes = await fetch('/api/storage?getConfig=website');
+            if (websiteConfigRes.ok) {
+                const websiteConfigData = await websiteConfigRes.json();
+                if (websiteConfigData) {
+                    setSiteSettings(prev => ({
+                        ...prev,
+                        title: websiteConfigData.title || prev.title,
+                        navTitle: websiteConfigData.navTitle || prev.navTitle,
+                        favicon: websiteConfigData.favicon || prev.favicon,
+                        cardStyle: websiteConfigData.cardStyle || prev.cardStyle,
+                        passwordExpiryDays: websiteConfigData.passwordExpiryDays !== undefined ? websiteConfigData.passwordExpiryDays : prev.passwordExpiryDays
+                    }));
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to fetch website config after login.", e);
+        }
+
+        // 检查密码是否过期
+        const lastLoginTime = localStorage.getItem('lastLoginTime');
+        const currentTime = Date.now();
+
+        if (lastLoginTime) {
+            const lastLogin = parseInt(lastLoginTime);
+            const timeDiff = currentTime - lastLogin;
+
+            const expiryTimeMs = (siteSettings.passwordExpiryDays || 7) > 0 ? (siteSettings.passwordExpiryDays || 7) * 24 * 60 * 60 * 1000 : 0;
+
+            if (expiryTimeMs > 0 && timeDiff > expiryTimeMs) {
+                setAuthToken(null);
+                localStorage.removeItem(AUTH_KEY);
+                setIsAuthOpen(true);
+                alert('您的密码已过期，请重新登录');
+                return false;
+            }
+        }
+
+        localStorage.setItem('lastLoginTime', currentTime.toString());
+
+        // 登录成功后，从服务器获取数据
+        try {
+            const res = await fetch('/api/storage');
+            if (res.ok) {
+                const data = await res.json();
+                // 如果服务器有数据，使用服务器数据
+                if (data.links && data.links.length > 0) {
+                    setLinks(data.links);
+                    setCategories(data.categories || DEFAULT_CATEGORIES);
+                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+
+                    // 加载链接图标缓存
+                    loadLinkIcons(data.links);
+                } else {
+                    // 如果服务器没有数据，使用本地数据
+                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ links, categories }));
+                    // 并将本地数据同步到服务器
+                    syncToCloud(links, categories, password);
+
+                    // 加载链接图标缓存
+                    loadLinkIcons(links);
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to fetch data after login.", e);
+            loadFromLocal();
+            // 尝试将本地数据同步到服务器
+            syncToCloud(links, categories, password);
+        }
+
+        // 登录成功后，从KV空间加载AI配置
+        try {
+            const aiConfigRes = await fetch('/api/storage?getConfig=ai');
+            if (aiConfigRes.ok) {
+                const aiConfigData = await aiConfigRes.json();
+                if (aiConfigData && Object.keys(aiConfigData).length > 0) {
+                    setAiConfig(aiConfigData);
+                    localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(aiConfigData));
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to fetch AI config after login.", e);
+        }
+
+        return true;
+    } catch (e) {
+        return false;
+    }
   };
 
   const handleLogout = () => {
